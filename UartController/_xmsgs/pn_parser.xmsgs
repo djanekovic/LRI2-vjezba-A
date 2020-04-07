@@ -8,7 +8,7 @@
 <!-- Copyright (c) 1995-2013 Xilinx, Inc.  All rights reserved.    -->
 
 <messages>
-<msg type="info" file="ProjectMgmt" num="1061" ><arg fmt="%s" index="1">Parsing VHDL file &quot;//VBOXSVR/WIN10_shared/LRI2-vjezba-A/UartController/receiver.vhd&quot; into library work</arg>
+<msg type="info" file="ProjectMgmt" num="1061" ><arg fmt="%s" index="1">Parsing VHDL file &quot;//VBOXSVR/WIN10_shared/LRI2-vjezba-A/UartController/baud_rate_generator.vhd&quot; into library work</arg>
 </msg>
 
 </messages>
