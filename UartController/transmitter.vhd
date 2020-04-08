@@ -32,9 +32,9 @@ use IEEE.STD_LOGIC_1164.ALL;
 entity transmitter is PORT (
 	clk: 		in std_logic;
 	rst: 		in std_logic;
-	tick: 	in std_logic;
+	tick: 		in std_logic;
 	w_data: 	in std_logic_vector(7 downto 0);
-	w_start: in std_logic;
+	w_start: 	in std_logic;
 	tx: 		out std_logic;
 	w_done: 	out std_logic
 	);
@@ -49,7 +49,7 @@ architecture Behavioral of transmitter is
 	--tx := 1; idle
 
 begin
-	process(w_start, b_i, state, tick) --tick umjesto cnt?, mozda w_start ne treba
+	process(w_start, b_i, state, tick) --tick umjesto cnt?, mozda w_start i b_i ne trebaju
 	begin
 		case state is
 			when idle =>
@@ -74,7 +74,7 @@ begin
 					tx <= w_data(b_i);
 					b_i <= b_i + 1;
 					cnt <= 0;
-				elsif ((cnt = 15) and (b_i = 7)) then -- 8?
+				elsif ((cnt = 15) and (b_i = 7)) then -- 8? ako se provjerava ovaj elsif svaki put poslije ovog gornjeg 
 					tx <= 1; 			-- stop bit
 					w_done <= 1;
 					next_state <= idle;
