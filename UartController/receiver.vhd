@@ -34,51 +34,58 @@ entity receiver is PORT (
 	clk: in std_logic;
 	tick: in std_logic;
 	rst: in std_logic;
-	r_dataa: out std_logic_vector(7 downto 0);
-	r_done: out std_logic);
+	r_data: out std_logic_vector(7 downto 0) := (others => '0');
+	r_done: out std_logic := '0');
 end receiver;
 
 architecture Behavioral of receiver is
-	type state is (idle, start, start_ck, recv);
-	signal curr_state, next_state : std_logic;
-	signal cnt : integer range 0 to 15 := 0;
-	signal b_i : integer range 0 to 7 := 0;
+	type state is (idle, start, recv);
+	signal curr_state, next_state : state := idle;
+	signal r_data_next: std_logic_vector(7 downto 0) := (others => '0');
+	signal r_done_next: std_logic := '0';
+	signal cnt_enable : std_logic := '0';
+	signal cnt, next_cnt: integer range 0 to 15;
+	signal b_i, next_b_i : integer range 0 to 7 := 0;
 begin
 
-	process(rx, cnt, b_i, state)
+	process(rx, tick, curr_state)
 	begin
-		case state is
+		next_state <= curr_state;
+		case curr_state is
 			when idle =>
-				if rx = 0 then
+				r_done_next <= '0';
+				if rx = '0' then
+					next_cnt <= 0;
+					cnt_enable <= '1';
 					next_state <= start;
-					cnt <= 0;
 				end if;
 			when start =>
-				if cnt < 7 then
-					next_state <= start;
-					cnt <= cnt + 1;
-				elsif cnt = 7 then
-					next_state <= startk_ck;
-					cnt <= 0;
-				end if;
-			when start_ck =>
-				if rx = 1 then
-					next_state <= idle;
-				else
-					next_state <= recv;
-					cnt <= 0;
-					b_i <= 0;
+				if rising_edge(tick) then
+					if ((cnt = 7) and (rx = '0')) then
+						next_b_i <= 0;
+						next_cnt <= 0;
+						next_state <= recv;
+					elsif ((cnt  = 7) and (rx = '1')) then
+						cnt_enable <= '0';
+						next_state <= idle;
+						next_cnt <= 0;
+					else
+						next_cnt <= cnt + 1;
+					end if;
 				end if;
 			when recv =>
-				if cnt < 15 then
-					cnt <= ctn + 1;
-				elsif cnt = 15 then
-					r_data(b_i) <= rx;
-					b_i <= b_i + 1;
-					cnt <= 0;
-				elsif ((cnt = 15) and (b_i = 7)) then
-					r_data <= 1;
-					next_state <= idle;
+				if rising_edge(tick) then
+					if ((cnt = 15) and (b_i = 7)) then
+						r_done_next <= '1';
+						cnt_enable <= '0';
+						next_state <= idle;
+					elsif cnt = 15 then
+						r_data_next(b_i) <= rx;
+						next_b_i <= b_i + 1;
+						next_cnt <= 0;
+					else
+						next_cnt <= cnt + 1;
+					end if;
 				end if;
 			when others =>
 				null;
@@ -89,8 +96,12 @@ begin
 	begin
 		if rising_edge(clk) then
 			curr_state <= next_state;
-		elsif reset = '1' then
-			stanje <= idle;
+			r_data <= r_data_next;
+			r_done <= r_done_next;
+			b_i <= next_b_i;
+			cnt <= next_cnt;
+		elsif rst = '1' then
+			curr_state <= idle;
 		end if;
 	end process;
 
