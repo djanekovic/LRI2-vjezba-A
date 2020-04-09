@@ -34,51 +34,77 @@ entity receiver is PORT (
 	clk: in std_logic;
 	tick: in std_logic;
 	rst: in std_logic;
-	r_dataa: out std_logic_vector(7 downto 0);
-	r_done: out std_logic);
+	r_data: out std_logic_vector(7 downto 0) := (others => '0');
+	r_done: out std_logic := '0');
 end receiver;
 
 architecture Behavioral of receiver is
-	type state is (idle, start, start_ck, recv);
-	signal curr_state, next_state : std_logic;
-	signal cnt : integer range 0 to 15 := 0;
-	signal b_i : integer range 0 to 7 := 0;
+	type state is (idle, start, recv, stop);
+	signal curr_state, next_state : state := idle;
+	signal r_data_next: std_logic_vector(7 downto 0) := (others => '0');
+	signal r_done_next: std_logic := '0';
+	signal cnt, next_cnt: integer range 0 to 15;
+	signal b_i, next_b_i : integer range 0 to 7 := 0;
 begin
 
-	process(rx, cnt, b_i, state)
+	process(rx, tick, curr_state)
 	begin
-		case state is
+		next_state <= curr_state;
+		case curr_state is
 			when idle =>
-				if rx = 0 then
+				-- ako smo dobiti rx = 0 onda idemo u stanje start gdje citamo start bit
+				if rx = '0' then
+					r_done_next <= '0';	-- TODO: Treba li r_done biti trajanja clocka ili duze
+					next_cnt <= 0;
 					next_state <= start;
-					cnt <= 0;
 				end if;
 			when start =>
-				if cnt < 7 then
-					next_state <= start;
-					cnt <= cnt + 1;
-				elsif cnt = 7 then
-					next_state <= startk_ck;
-					cnt <= 0;
-				end if;
-			when start_ck =>
-				if rx = 1 then
-					next_state <= idle;
-				else
-					next_state <= recv;
-					cnt <= 0;
-					b_i <= 0;
+				-- TODO: mozda se ovo ne mora raditi ali cini mi se krivo ako se koristi tick = 1
+				-- u stanju start se moramo sinkronizirati na rising_edge(tick)
+				if rising_edge(tick) then
+					-- procitao si rx = 0 odnosno procitao si start bit i mozemo citati bajt
+					if ((cnt = 7) and (rx = '0')) then
+						next_b_i <= 0;
+						next_cnt <= 0;
+						next_state <= recv;
+					-- na ulazu je bila neka kratka promjena i zapravo nemamo start bit
+					elsif ((cnt  = 7) and (rx = '1')) then
+						next_state <= idle;
+						next_cnt <= 0;
+					else
+						next_cnt <= cnt + 1;
+					end if;
 				end if;
 			when recv =>
-				if cnt < 15 then
-					cnt <= ctn + 1;
-				elsif cnt = 15 then
-					r_data(b_i) <= rx;
-					b_i <= b_i + 1;
-					cnt <= 0;
-				elsif ((cnt = 15) and (b_i = 7)) then
-					r_data <= 1;
-					next_state <= idle;
+				-- opet smo sinkronizirani na rising edge od tick
+				if rising_edge(tick) then
+					-- procitao sam cijeli bajt, idemo procitati stop bit
+					-- TODO: Hendlaj sve brojeve kroz constant
+					if ((cnt = 15) and (b_i = 7)) then
+						r_data_next(b_i) <= rx;
+						next_cnt <= 0;
+						next_state <= stop;
+					-- procitao bajt, idemo procitati jos jedan
+					elsif cnt = 15 then
+						r_data_next(b_i) <= rx;
+						next_b_i <= b_i + 1;
+						next_cnt <= 0;
+					else
+						next_cnt <= cnt + 1;
+					end if;
+				end if;
+			when stop =>
+				-- ovdje trebamo procitati stop bit
+				-- ako ne procitam stop bit, bacam cijeli bajt u smece
+				if rising_edge(tick) then
+					if ((cnt = 15) and (rx = '1')) then
+						r_done_next <= '1';
+						next_state <= idle;
+					elsif ((cnt  = 15) and (rx = '0')) then
+						next_state <= idle;
+					else
+						next_cnt <= cnt + 1;
+					end if;
 				end if;
 			when others =>
 				null;
@@ -89,8 +115,12 @@ begin
 	begin
 		if rising_edge(clk) then
 			curr_state <= next_state;
-		elsif reset = '1' then
-			stanje <= idle;
+			r_data <= r_data_next;
+			r_done <= r_done_next;
+			b_i <= next_b_i;
+			cnt <= next_cnt;
+		elsif rst = '1' then
+			curr_state <= idle;
 		end if;
 	end process;
 
