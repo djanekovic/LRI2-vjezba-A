@@ -32,52 +32,68 @@ use IEEE.STD_LOGIC_1164.ALL;
 entity transmitter is PORT (
 	clk: 		in std_logic;
 	rst: 		in std_logic;
-	tick: 		in std_logic;
+	tick: 	in std_logic;
 	w_data: 	in std_logic_vector(7 downto 0);
-	w_start: 	in std_logic;
+	w_start: in std_logic;
 	tx: 		out std_logic;
-	w_done: 	out std_logic
-	);
+	w_done: 	out std_logic := '1');
 end transmitter;
 
 architecture Behavioral of transmitter is
-	type state is (idle, start, transmit);
-	signal curr_state, next_state : std_logic;
-	signal cnt : integer range 0 to 15 := 0;
-	signal b_i : integer range 0 to 7 := 0;
-	--w_done := 1; idle // kako staviti pocetne vrijednosti
+	type state is (idle, start, transmit, stop);
+	signal curr_state, next_state : state := idle;
+	signal cnt, next_cnt : integer range 0 to 15 := 0;
+	signal b_i, next_b_i : integer range 0 to 7 := 0;
+	signal tx_next: std_logic := '1';
+	signal w_done_next: std_logic := '1';
 	--tx := 1; idle
 
 begin
-	process(w_start, b_i, state, tick) --tick umjesto cnt?, mozda w_start i b_i ne trebaju
+	process(w_start, curr_state, tick) -- mozda w_start ne treba
 	begin
-		case state is
+		next_state <= curr_state;
+		case curr_state is
 			when idle =>
-				if ((w_start = 1) and (w_done = 1)) then -- dogovor
+				-- ako je stavljen podatak na w_data i ako je transmitter slobodan, idemo u start stanje
+				if ((w_start = '1') and (w_done_next = '1')) then -- dogovor
 					next_state <= start;
-					w_done <= 0;
-					cnt <= 0;
+					w_done_next <= '0';
+					next_cnt <= 0;
 				end if;
 			when start =>
-				if cnt < 7 then
-					next_state <= start;
-					cnt <= cnt +1;
-				elsif cnt = 7 then
-					tx <= 0;				-- start bit
-					next_state <= transmit;
-					cnt <= 0;
-				end if;			
+				-- salje se start bit
+				if rising_edge(tick) then
+					if cnt < 7 then
+						--next_state <= start;
+						next_cnt <= cnt +1;
+					elsif cnt = 7 then
+						tx_next <= '0';				-- start bit
+						next_state <= transmit;
+						next_cnt <= 0;
+					end if;
+				end if;
 			when transmit =>
-				if cnt < 15 then
-					cnt <= cnt +1;
-				elsif cnt = 15 then
-					tx <= w_data(b_i);
-					b_i <= b_i + 1;
-					cnt <= 0;
-				elsif ((cnt = 15) and (b_i = 7)) then -- 8? ako se provjerava ovaj elsif svaki put poslije ovog gornjeg 
-					tx <= 1; 			-- stop bit
-					w_done <= 1;
-					next_state <= idle;
+				if rising_edge(tick) then
+					if ((cnt = 15) and (b_i = 7))then					
+						tx_next <= w_data(b_i);
+						next_state <= stop;
+					elsif cnt = 15 then
+						tx_next <= w_data(b_i);
+						next_b_i <= b_i + 1;
+						next_cnt <= 0;
+					else 
+						next_cnt <= cnt + 1;
+					end if;
+				end if;
+			when stop =>
+				if rising_edge(tick) then
+					if cnt = 15 then						
+						tx_next <= '1'; 			-- stop bit
+						w_done_next <= '1';
+						next_state <= idle;
+					else
+						next_cnt <= cnt + 1;
+					end if;
 				end if;
 			when others =>
 				null;
@@ -88,7 +104,11 @@ begin
 	begin
 		if rising_edge(clk) then
 			curr_state <= next_state;
-		elsif reset = '1' then
+			cnt <= next_cnt;
+			b_i <= next_b_i;
+			w_done <= w_done_next;
+			tx <= tx_next;
+		elsif rst = '1' then
 			curr_state <= idle;
 		end if;
 	end process;
