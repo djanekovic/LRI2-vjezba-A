@@ -36,7 +36,7 @@ entity transmitter is PORT (
 	w_data: 	in std_logic_vector(7 downto 0);
 	w_start: in std_logic;
 	tx: 		out std_logic;
-	w_done: 	out std_logic);
+	w_done: 	out std_logic := '1');
 end transmitter;
 
 architecture Behavioral of transmitter is
@@ -47,7 +47,7 @@ architecture Behavioral of transmitter is
 	signal tx_next: std_logic;
 	signal w_done_next: std_logic := '1';
 	signal w_data_next: std_logic_vector(7 downto 0);
-	--tx := 1; idle
+	
 
 begin
 	process(w_start, curr_state, tick) -- mozda w_start ne treba
