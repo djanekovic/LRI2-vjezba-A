@@ -36,7 +36,7 @@ entity transmitter is PORT (
 	w_data: 	in std_logic_vector(7 downto 0);
 	w_start: in std_logic;
 	tx: 		out std_logic;
-	w_done: 	out std_logic := '1');
+	w_done: 	out std_logic);
 end transmitter;
 
 architecture Behavioral of transmitter is
@@ -46,19 +46,21 @@ architecture Behavioral of transmitter is
 	signal b_i, next_b_i : integer range 0 to 7 := 0;
 	signal tx_next: std_logic := '1';
 	signal w_done_next: std_logic := '1';
+	signal w_data_next: std_logic_vector(7 downto 0);
 	--tx := 1; idle
 
 begin
-	process(w_start, curr_state, tick) -- mozda w_start ne treba
+	process(curr_state, tick) -- mozda w_start ne treba
 	begin
 		next_state <= curr_state;
 		case curr_state is
 			when idle =>
 				-- ako je stavljen podatak na w_data i ako je transmitter slobodan, idemo u start stanje
-				if ((w_start = '1') and (w_done_next = '1')) then -- dogovor
+				if ((w_start = '1') and (w_done_next = '1')) then -- uvijek udje jer u testbenchu ne mogu promijeniti w_start
 					next_state <= start;
 					w_done_next <= '0';
 					next_cnt <= 0;
+					w_data_next <= w_data;
 				end if;
 			when start =>
 				-- salje se start bit
@@ -75,10 +77,10 @@ begin
 			when transmit =>
 				if rising_edge(tick) then
 					if ((cnt = 15) and (b_i = 7))then					
-						tx_next <= w_data(b_i);
+						tx_next <= w_data_next(b_i);
 						next_state <= stop;
 					elsif cnt = 15 then
-						tx_next <= w_data(b_i);
+						tx_next <= w_data_next(b_i);
 						next_b_i <= b_i + 1;
 						next_cnt <= 0;
 					else 
@@ -114,3 +116,4 @@ begin
 	end process;
 
 end Behavioral;
+
