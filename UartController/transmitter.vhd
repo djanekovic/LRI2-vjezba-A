@@ -67,10 +67,10 @@ begin
 				-- salje se start bit
 				--	tx_next <= '0';					
 				if rising_edge(tick) then
-					if cnt < 7 then
+					if cnt < 15 then
 						--next_state <= start;
 						next_cnt <= cnt +1;					
-					elsif cnt = 7 then
+					elsif cnt = 15 then
 						tx_next <= '0';				-- start bit
 						next_state <= transmit;
 						next_cnt <= 0;
