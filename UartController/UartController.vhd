@@ -104,7 +104,7 @@ begin
 										w_done=>w_done											
 										);
 										
-	rec: component transmitter port map(
+	rec: component receiver port map(
 										rx=>rx,
 										clk=>clk,
 										tick=>tick,
@@ -113,7 +113,7 @@ begin
 										r_done=>done
 										);									
 	
-	baud_generator: component transmitter port map(
+	baud_generator: component baud_rate_generator port map(
 										clk=>clk,
 										rst=>rst,
 										tick=>tick
