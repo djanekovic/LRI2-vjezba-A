@@ -50,7 +50,7 @@ architecture Behavioral of transmitter is
 	--tx := 1; idle
 
 begin
-	process(curr_state, tick) -- mozda w_start ne treba
+	process(w_start, curr_state, tick) -- mozda w_start ne treba
 	begin
 		next_state <= curr_state;
 		case curr_state is
@@ -65,13 +65,11 @@ begin
 				end if;
 			when start =>
 				-- salje se start bit
-				--	tx_next <= '0';					
+				tx_next <= '0';					
 				if rising_edge(tick) then
 					if cnt < 15 then
-						--next_state <= start;
 						next_cnt <= cnt +1;					
 					elsif cnt = 15 then
-						tx_next <= '0';				-- start bit
 						next_state <= transmit;
 						next_cnt <= 0;
 						next_b_i <= 0;
@@ -79,12 +77,11 @@ begin
 				end if;
 			when transmit =>
 				if rising_edge(tick) then
+					tx_next <= w_data_next(b_i);
 					if ((cnt = 15) and (b_i = 7))then					
-						tx_next <= w_data_next(b_i);
 						next_state <= stop;
 						next_cnt <= 0;
 					elsif cnt = 15 then
-						tx_next <= w_data_next(b_i);
 						next_b_i <= b_i + 1;
 						next_cnt <= 0;
 					else 
@@ -93,9 +90,9 @@ begin
 				end if;
 			when stop =>
 				if rising_edge(tick) then
-					if (cnt = 15) then						
-						tx_next <= '1'; 			-- stop bit
-						w_done_next <= '1';
+					tx_next <= '1';		-- stop bit
+					w_done_next <= '1';
+					if (cnt = 15) then											
 						next_state <= idle;
 					else
 						next_cnt <= cnt + 1;
