@@ -72,6 +72,7 @@ begin
 						tx_next <= '0';				-- start bit
 						next_state <= transmit;
 						next_cnt <= 0;
+						next_b_i <= 0;
 					end if;
 				end if;
 			when transmit =>
