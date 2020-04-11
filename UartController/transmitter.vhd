@@ -44,7 +44,7 @@ architecture Behavioral of transmitter is
 	signal curr_state, next_state : state := idle;
 	signal cnt, next_cnt : integer range 0 to 15 := 0;
 	signal b_i, next_b_i : integer range 0 to 7 := 0;
-	signal tx_next: std_logic := '1';
+	signal tx_next: std_logic;
 	signal w_done_next: std_logic := '1';
 	signal w_data_next: std_logic_vector(7 downto 0);
 	--tx := 1; idle
@@ -55,6 +55,7 @@ begin
 		next_state <= curr_state;
 		case curr_state is
 			when idle =>
+				tx_next <= '1';
 				-- ako je stavljen podatak na w_data i ako je transmitter slobodan, idemo u start stanje
 				if ((w_start = '1') and (w_done_next = '1')) then -- uvijek udje jer u testbenchu ne mogu promijeniti w_start
 					next_state <= start;
@@ -64,10 +65,11 @@ begin
 				end if;
 			when start =>
 				-- salje se start bit
+				--	tx_next <= '0';					
 				if rising_edge(tick) then
 					if cnt < 7 then
 						--next_state <= start;
-						next_cnt <= cnt +1;
+						next_cnt <= cnt +1;					
 					elsif cnt = 7 then
 						tx_next <= '0';				-- start bit
 						next_state <= transmit;
@@ -80,6 +82,7 @@ begin
 					if ((cnt = 15) and (b_i = 7))then					
 						tx_next <= w_data_next(b_i);
 						next_state <= stop;
+						next_cnt <= 0;
 					elsif cnt = 15 then
 						tx_next <= w_data_next(b_i);
 						next_b_i <= b_i + 1;
@@ -90,7 +93,7 @@ begin
 				end if;
 			when stop =>
 				if rising_edge(tick) then
-					if cnt = 15 then						
+					if (cnt = 15) then						
 						tx_next <= '1'; 			-- stop bit
 						w_done_next <= '1';
 						next_state <= idle;
@@ -117,4 +120,3 @@ begin
 	end process;
 
 end Behavioral;
-
