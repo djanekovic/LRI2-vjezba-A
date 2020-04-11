@@ -103,7 +103,8 @@ BEGIN
 	begin
 		w_data <= "00001111";
 		w_start <= '1';
-		wait for 16 * 4 * tx_period;
+		wait for tx_period;
+		w_start <= '0';			-- ne radi kako bi trebalo
 	end process;
 
    -- Stimulus process
