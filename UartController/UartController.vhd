@@ -35,10 +35,12 @@ entity UartController is PORT(
 	clk: in std_logic;
 	rst: in std_logic;
 	rx: in std_logic;
-	w_start: in std_logic;
 	tx: out std_logic;
-	w_done: out std_logic;
-	r_done: out std_logic
+	r_data: out std_logic_vector(7 downto 0);
+	r_done: out std_logic;
+	w_data: in std_logic_vector(7 downto 0);
+	w_start: in std_logic;
+	w_done: out std_logic
 );
 end UartController;
 
@@ -75,30 +77,27 @@ architecture Behavioral of UartController is
 		);
 	end component;
 	
-	signal data: std_logic_vector(7 downto 0) := (others => '0');
-	signal tick:std_logic:='0';
-	signal done: std_logic:='0';
-	
+	signal tick: std_logic;
 begin
 	-- ovako ne znam jel tocno ili ne, ali moja logika je, ako zelimo testirati reciever i transmitter (pise u vjezbi da radimo preko rx linije)
 	-- za to nam trebaju 3 dodatna signala DATA, TICK, DONE
 	-- ne vjerujem da ne postoje blok komentari na netu
 	-- ideja: dovedemo neki testni niz na RX, kada reciever primi sve podatke on ih posalje na DATA te postavi DONE u 1
-	-- TX_START pove≈æemo na DONE tj cim se RX_DONE prebaci u 1 automatski pokrece na≈° transmitter koji za 
-	-- svoj input uzima isto ono ≈°to je reciever primio tj. DATA i prosljeduje ga na TX
-	-- time testiramo i reciever da dobro prima i transmitter koji isti taj podatak ≈°alje "u prazno"
+	-- TX_START poveûemo na DONE tj cim se RX_DONE prebaci u 1 automatski pokrece naö transmitter koji za 
+	-- svoj input uzima isto ono öto je reciever primio tj. DATA i prosljeduje ga na TX
+	-- time testiramo i reciever da dobro prima i transmitter koji isti taj podatak öalje "u prazno"
 	
 	--znaci u TEST-BENCH radimo samo rx='0' , after 10ns rx='1' itd itd i naravno 1 reset za probu
 	--test bench krenem radit kada se testira transmitter
 	
-	--ovakav pristup na ostavlja neke pinove od UARTA u zraku, ne znam mo≈æe li se staviti na kraj koda nesto tipa r_done<=done, w_done<=
+	--ovakav pristup na ostavlja neke pinove od UARTA u zraku, ne znam moûe li se staviti na kraj koda nesto tipa r_done<=done, w_done<=
 	
 	trans: component transmitter port map(
 										clk=>clk,
 										rst=>rst,
 										tick=>tick,
-										w_data=>data,
-										w_start=>done,
+										w_data=>w_data,
+										w_start=>w_start,
 										tx=>tx,
 										w_done=>w_done											
 										);
@@ -108,8 +107,8 @@ begin
 										clk=>clk,
 										tick=>tick,
 										rst=>rst,
-										r_data=>data,
-										r_done=>done
+										r_data=>r_data,
+										r_done=>r_done
 										);									
 	
 	baud_generator: component baud_rate_generator port map(
