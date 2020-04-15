@@ -65,7 +65,7 @@ ARCHITECTURE behavior OF UartController_tb IS
 
    -- Clock period definitions
    constant clk_period : time := 10 ns;
-	constant rx_period: time:= clk_period*170*16;
+	constant rx_period: time:= clk_period*176*16*2;
  
 BEGIN
  
@@ -89,7 +89,9 @@ BEGIN
 		wait for clk_period/2;
    end process;
  
-
+	
    rx<='1', '0' after rx_period , '1' after 2*rx_period, '0' after 3*rx_period, '0' after 4*rx_period, '0' after 5*rx_period, '1' after 6*rx_period, '1' after 7*rx_period, '0' after 8*rx_period, '1' after 9*rx_period, '1' after 10*rx_period;
-				--start					  D0							D1							D2								D3							D4							D5							D6							D7								STOP							
+				--start					  D0							D1							D2								D3							D4							     D5							D6							    D7								STOP							
 END;
+
+
