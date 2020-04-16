@@ -54,7 +54,7 @@ begin
 		curr_state <= idle;
 		b_i <= 0;
 		w_done <= '1';
-		--tx <= '1';
+		tx <= '1';
 		
 	elsif rising_edge(tick) then
 		curr_state <= next_state;
@@ -67,7 +67,6 @@ begin
 					next_state <= start;
 					w_done <= '0';
 					cnt <= 0;
-					--tx <= '0';
 				end if;
 			when start =>
 				-- salje se start bit
