@@ -62,8 +62,8 @@ begin
 		case curr_state is
 			when idle =>
 				tx <= '1';
-				-- ako je stavljen podatak na w_data i ako je transmitter slobodan, idemo u start stanje
-				if (w_start = '1') then -- uvijek udje jer u testbenchu ne mogu promijeniti w_start
+				-- ako je stavljen podatak na w_data idemo u start stanje
+				if (w_start = '1') then 
 					next_state <= start;
 					w_done <= '0';
 					cnt <= 0;
