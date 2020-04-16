@@ -79,18 +79,6 @@ architecture Behavioral of UartController is
 	
 	signal tick: std_logic;
 begin
-	-- ovako ne znam jel tocno ili ne, ali moja logika je, ako zelimo testirati reciever i transmitter (pise u vjezbi da radimo preko rx linije)
-	-- za to nam trebaju 3 dodatna signala DATA, TICK, DONE
-	-- ne vjerujem da ne postoje blok komentari na netu
-	-- ideja: dovedemo neki testni niz na RX, kada reciever primi sve podatke on ih posalje na DATA te postavi DONE u 1
-	-- TX_START povežemo na DONE tj cim se RX_DONE prebaci u 1 automatski pokrece naš transmitter koji za 
-	-- svoj input uzima isto ono što je reciever primio tj. DATA i prosljeduje ga na TX
-	-- time testiramo i reciever da dobro prima i transmitter koji isti taj podatak šalje "u prazno"
-	
-	--znaci u TEST-BENCH radimo samo rx='0' , after 10ns rx='1' itd itd i naravno 1 reset za probu
-	--test bench krenem radit kada se testira transmitter
-	
-	--ovakav pristup na ostavlja neke pinove od UARTA u zraku, ne znam može li se staviti na kraj koda nesto tipa r_done<=done, w_done<=
 	
 	trans: component transmitter port map(
 										clk=>clk,

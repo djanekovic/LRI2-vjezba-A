@@ -60,6 +60,7 @@ begin
 		curr_state <= next_state;
 		
 		case curr_state is
+			
 			when idle =>
 				tx <= '1';
 				-- ako je stavljen podatak na w_data idemo u start stanje
@@ -68,6 +69,7 @@ begin
 					w_done <= '0';
 					cnt <= 0;
 				end if;
+			
 			when start =>
 				-- salje se start bit
 				tx <= '0';									
@@ -80,32 +82,31 @@ begin
 				end if;
 				
 			when transmit =>			
-					tx <= w_data(b_i);
-					if ((cnt = 15) and (b_i = 7))then					
-						next_state <= stop;
-						cnt <= 0;
-					elsif cnt = 15 then
-						b_i <= b_i + 1;
-						cnt <= 0;
-					else 
-						cnt <= cnt + 1;
-					end if;
-				
-				
+				tx <= w_data(b_i);
+				if ((cnt = 15) and (b_i = 7))then					
+					next_state <= stop;
+					cnt <= 0;
+				elsif cnt = 15 then
+					b_i <= b_i + 1;
+					cnt <= 0;
+				else 
+					cnt <= cnt + 1;
+				end if;
+					
 			when stop =>
-					b_i <= 0;
-					tx <= '1';		-- stop bit
-					w_done <= '1';
-					if (cnt = 15) then											
-						next_state <= idle;
-					else
-						cnt <= cnt + 1;
-					end if;
+				b_i <= 0;
+				tx <= '1';		-- stop bit
+				w_done <= '1';
+				if (cnt = 15) then											
+					next_state <= idle;
+				else
+					cnt <= cnt + 1;
+				end if;
 				
 			when others =>
 				null;
 		end case;
-		end if;
+	end if;
 	end process;
 	
 

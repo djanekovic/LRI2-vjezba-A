@@ -69,60 +69,54 @@ begin
 				end if;
 				
 			when start =>
-				-- TODO: mozda se ovo ne mora raditi ali cini mi se krivo ako se koristi tick = 1
-				-- u stanju start se moramo sinkronizirati na rising_edge(tick)
 				
-					-- procitao si rx = 0 odnosno procitao si start bit i mozemo citati bajt
-					if ((cnt = 7) and (rx = '0')) then
-						b_i <= 0;
-						cnt <= 0;
-						next_state <= recv;
-					-- na ulazu je bila neka kratka promjena i zapravo nemamo start bit
-					elsif ((cnt  = 7) and (rx = '1')) then
-						next_state <= idle;
-						cnt <= 0;
-					else
-						cnt <= cnt + 1;
-					end if;
+				-- procitao si rx = 0 odnosno procitao si start bit i mozemo citati bajt
+				if ((cnt = 7) and (rx = '0')) then
+					b_i <= 0;
+					cnt <= 0;
+					next_state <= recv;
+				-- na ulazu je bila neka kratka promjena i zapravo nemamo start bit
+				elsif ((cnt  = 7) and (rx = '1')) then
+					next_state <= idle;
+					cnt <= 0;
+				else
+					cnt <= cnt + 1;
+				end if;
 				   
 			when recv =>
-				-- opet smo sinkronizirani na rising edge od tick
 				
-					-- procitao sam cijeli bajt, idemo procitati stop bit
-					-- TODO: Hendlaj sve brojeve kroz constant
-					if ((cnt = 15) and (b_i = 7)) then
-						r_data(b_i) <= rx;
-						cnt <= 0;
-						next_state <= stop;
-					-- procitao bajt, idemo procitati jos jedan
-					elsif cnt = 15 then
-						r_data(b_i) <= rx;
-						b_i <= b_i + 1;
-						cnt <= 0;
-					else
-						cnt <= cnt + 1;
-					end if;
+				-- procitao sam cijeli bajt, idemo procitati stop bit
+				if ((cnt = 15) and (b_i = 7)) then
+					r_data(b_i) <= rx;
+					cnt <= 0;
+					next_state <= stop;
+				-- procitao bajt, idemo procitati jos jedan
+				elsif cnt = 15 then
+					r_data(b_i) <= rx;
+					b_i <= b_i + 1;
+					cnt <= 0;
+				else
+					cnt <= cnt + 1;
+				end if;
 			
 			when stop =>
 				-- ovdje trebamo procitati stop bit
 				-- ako ne procitam stop bit, bacam cijeli bajt u smece
-					b_i <= 0;
-					if ((cnt = 15) and (rx = '1')) then
-						r_done <= '1';
-						next_state <= idle;			
-					elsif ((cnt  = 15) and (rx = '0')) then
-						next_state <= idle;
-					else
-						cnt <= cnt + 1;
-					end if;
+				b_i <= 0;
+				if ((cnt = 15) and (rx = '1')) then
+					r_done <= '1';
+					next_state <= idle;			
+				elsif ((cnt  = 15) and (rx = '0')) then
+					next_state <= idle;
+				else
+					cnt <= cnt + 1;
+				end if;
 			
 			when others =>
 				null;
 		end case;
-		end if;
+	end if;
 	end process;
-
-
 	
 end Behavioral;
 

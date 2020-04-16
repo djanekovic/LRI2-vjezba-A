@@ -62,8 +62,8 @@ ARCHITECTURE behavior OF receiver_tb IS
 
    -- Clock period definitions
    constant clk_period : time := 10 ns;
-	constant tick_period: time := clk_period * 170;
-	constant rx_period: time := tick_period * 16;
+   constant tick_period: time := clk_period * 170;
+   constant rx_period: time := tick_period * 16;
  
 BEGIN
  
