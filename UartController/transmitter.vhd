@@ -47,7 +47,7 @@ architecture Behavioral of transmitter is
 	signal tx_next: std_logic;
 	signal w_done_next: std_logic := '1';
 	signal w_data_next: std_logic_vector(7 downto 0);
-	
+	signal prev_tick : std_logic := '0';
 
 begin
 	process(w_start, curr_state, tick) -- mozda w_start ne treba
@@ -66,7 +66,7 @@ begin
 			when start =>
 				-- salje se start bit
 				tx_next <= '0';					
-				if rising_edge(tick) then
+				if (tick = '1' and prev_tick = '0') then
 					if cnt < 15 then
 						next_cnt <= cnt +1;					
 					elsif cnt = 15 then
@@ -76,7 +76,7 @@ begin
 					end if;
 				end if;
 			when transmit =>
-				if rising_edge(tick) then
+				if (tick = '1' and prev_tick = '0') then
 					tx_next <= w_data_next(b_i);
 					if ((cnt = 15) and (b_i = 7))then					
 						next_state <= stop;
@@ -89,7 +89,7 @@ begin
 					end if;
 				end if;
 			when stop =>
-				if rising_edge(tick) then
+				if (tick = '1' and prev_tick = '0') then
 					tx_next <= '1';		-- stop bit
 					w_done_next <= '1';
 					if (cnt = 15) then											
@@ -111,6 +111,7 @@ begin
 			b_i <= next_b_i;
 			w_done <= w_done_next;
 			tx <= tx_next;
+			prev_tick <= tick;
 		elsif rst = '1' then
 			curr_state <= idle;
 		end if;
