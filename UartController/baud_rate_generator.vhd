@@ -49,7 +49,7 @@ begin
 				counter <= (others => '0');
 			else
 				counter <= counter + '1';
-				if counter = "10110010" then
+				if counter = "10110000" then
 					tmp <= not tmp;
 					counter <= (others => '0');
 				end if;
