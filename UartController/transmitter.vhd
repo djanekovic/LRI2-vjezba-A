@@ -47,7 +47,7 @@ architecture Behavioral of transmitter is
 
 
 begin
-	process(w_start, tick, rst, curr_state) 
+	process(w_start, tick, rst) 
 	begin
 	if (rst = '1') then
 		cnt <= 0;
@@ -56,7 +56,7 @@ begin
 		w_done <= '1';
 		tx <= '1';
 		
-	else
+	elsif rising_edge(tick) then
 		curr_state <= next_state;
 		
 		case curr_state is
@@ -67,24 +67,21 @@ begin
 					next_state <= start;
 					w_done <= '0';
 					cnt <= 0;
-					tx <= '0';
-					--w_data_next <= w_data;
+					--tx <= '0';
 				end if;
 			when start =>
 				-- salje se start bit
-				tx <= '0';	
-				if rising_edge(tick) then
-					if cnt < 15 then
-						cnt <= cnt +1;					
-					elsif cnt = 15 then
-						next_state <= transmit;
-						cnt <= 0;
-						b_i <= 0;
-					end if;
+				tx <= '0';									
+				if cnt < 15 then
+					cnt <= cnt +1;					
+				elsif cnt = 15 then
+					next_state <= transmit;
+					cnt <= 0;
+					b_i <= 0;
 				end if;
-			when transmit =>	
-				tx <= w_data(b_i);
-				if rising_edge(tick) then				
+				
+			when transmit =>			
+					tx <= w_data(b_i);
 					if ((cnt = 15) and (b_i = 7))then					
 						next_state <= stop;
 						cnt <= 0;
@@ -94,19 +91,18 @@ begin
 					else 
 						cnt <= cnt + 1;
 					end if;
-				end if;
+				
 				
 			when stop =>
 					b_i <= 0;
 					tx <= '1';		-- stop bit
 					w_done <= '1';
-					if rising_edge(tick) then
-						if (cnt = 15) then											
-							next_state <= idle;
-						else
-							cnt <= cnt + 1;
-						end if;
+					if (cnt = 15) then											
+						next_state <= idle;
+					else
+						cnt <= cnt + 1;
 					end if;
+				
 			when others =>
 				null;
 		end case;
