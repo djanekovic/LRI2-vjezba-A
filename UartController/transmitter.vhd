@@ -52,7 +52,12 @@ architecture Behavioral of transmitter is
 begin
 	process(w_start, curr_state, tick) -- mozda w_start ne treba
 	begin
+		next_b_i <= b_i;
+		next_cnt <= cnt;
 		next_state <= curr_state;
+		w_done_next <= '0';
+		tx_next <= '1';
+		w_data_next <= w_data;
 		case curr_state is
 			when idle =>
 				tx_next <= '1';
