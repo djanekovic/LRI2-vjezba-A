@@ -90,7 +90,7 @@ BEGIN
 		clk <= '1';
 		wait for clk_period/2;
    end process;
- 
+	rst <= '0', '1' after 1.2ms;
 	rx<='1', '0' after rx_period , '1' after 2*rx_period, '0' after 3*rx_period, '0' after 4*rx_period, '0' after 5*rx_period, '1' after 6*rx_period, '1' after 7*rx_period, '0' after 8*rx_period, '1' after 9*rx_period, '1' after 10*rx_period;
 				--start					  D0							 D1							D2							  D3							 D4							D5							  D6							 D7						  STOP							
 END;
