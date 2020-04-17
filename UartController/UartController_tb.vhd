@@ -39,46 +39,48 @@ ARCHITECTURE behavior OF UartController_tb IS
  
     -- Component Declaration for the Unit Under Test (UUT)
  
-    COMPONENT UartController
-    PORT(
-         clk : IN  std_logic;
-         rst : IN  std_logic;
-         rx : IN  std_logic;
-         w_start : IN  std_logic;
-         tx : OUT  std_logic;
-         w_done : OUT  std_logic;
-         r_done : OUT  std_logic
-        );
+    COMPONENT UartController PORT(
+		clk: in std_logic;
+		rst: in std_logic;
+		rx: in std_logic;
+		w_data: in std_logic_vector(7 downto 0);
+		w_start: in std_logic;
+		tx: out std_logic;
+		r_data: out std_logic_vector(7 downto 0);
+		r_done: out std_logic;
+		w_done: out std_logic);
     END COMPONENT;
     
-
    --Inputs
    signal clk : std_logic := '0';
    signal rst : std_logic := '0';
    signal rx : std_logic := '0';
+	signal w_data: std_logic_vector(7 downto 0) := (others => '0');
    signal w_start : std_logic := '0';
 
  	--Outputs
-   signal tx : std_logic;
-   signal w_done : std_logic;
-   signal r_done : std_logic:='0';
+   signal tx : std_logic := '0';
+   signal w_done : std_logic := '0';
+   signal r_done : std_logic := '0';
+   signal r_data : std_logic_vector(7 downto 0) := (others => '0');
 
    -- Clock period definitions
    constant clk_period : time := 10 ns;
-	constant rx_period: time:= clk_period*176*16*2;
+   constant rx_period: time:= clk_period*176*16*2;
  
 BEGIN
  
 	-- Instantiate the Unit Under Test (UUT)
    uut: UartController PORT MAP (
-          clk => clk,
-          rst => rst,
-          rx => rx,
-          w_start => w_start,
-          tx => tx,
-          w_done => w_done,
-          r_done => r_done
-        );
+        clk => clk,
+        rst => rst,
+        rx => rx,
+		tx => tx,
+        r_data => w_data,
+		r_done => w_start,
+		w_data => w_data,
+        w_start => w_start,
+		w_done => w_done);
 
    -- Clock process definitions
    clk_process :process
@@ -88,10 +90,9 @@ BEGIN
 		clk <= '1';
 		wait for clk_period/2;
    end process;
- 
-	
-   rx<='1', '0' after rx_period , '1' after 2*rx_period, '0' after 3*rx_period, '0' after 4*rx_period, '0' after 5*rx_period, '1' after 6*rx_period, '1' after 7*rx_period, '0' after 8*rx_period, '1' after 9*rx_period, '1' after 10*rx_period;
-				--start					  D0							D1							D2								D3							D4							     D5							D6							    D7								STOP							
+	rst <= '0', '1' after 1.2ms;
+	rx<='1', '0' after rx_period , '1' after 2*rx_period, '0' after 3*rx_period, '0' after 4*rx_period, '0' after 5*rx_period, '1' after 6*rx_period, '1' after 7*rx_period, '0' after 8*rx_period, '1' after 9*rx_period, '1' after 10*rx_period;
+				--start					  D0							 D1							D2							  D3							 D4							D5							  D6									D7						  STOP	
+   -- 1-idle 0-start  "10001101" 1-stop
+	-- r_data="10110001"				
 END;
-
-
