@@ -62,6 +62,8 @@ begin
 	elsif (rx='0' and rx_start='1' and prev_rx='1') then 
 		rx_start<='0';
 		next_state<=start;
+		cnt <= 0;
+		r_done <= '0';
 	
 	elsif (rising_edge(clk)) then
 		curr_state <= next_state;
@@ -69,14 +71,9 @@ begin
 		prev_rx<=rx;
 		case curr_state is
 			when idle =>
-				-- ako smo dobiti rx = 0 onda idemo u stanje start gdje citamo start bit
-				if (prev_tick='0' and tick='1') then
-					if rx = '0' then
-						r_done <= '0';	
-						cnt <= 0;
-						next_state <= start;
-					end if;
-				end if;
+				-- ako smo dobiti rx = 0 onda idemo u stanje start gdje citamo start bit				
+
+				
 			when start =>
 				
 				if (prev_tick='0' and tick='1') then
