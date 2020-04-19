@@ -71,14 +71,12 @@ begin
 			when idle =>
 				tx <= '1';
 				-- ako je stavljen podatak na w_data, idemo u start stanje
-				if (prev_tick='0' and tick='1') then
-					if (w_start = '1') then 
+					if (w_start = '1' and w_done_next = '1') then 
 						next_state <= start;
 						w_done_next <= '0';
 						cnt <= 0;
 					end if;
-				end if;
-				
+							
 			when start =>
 				-- salje se start bit
 				tx <= '0';	
